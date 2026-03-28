@@ -1,5 +1,7 @@
 GeoFS FIP Flight Information Plugin 
-https://github.com/Geo-CA/Geofs-Flight-information-plugin/blob/main/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE_28-3-2026_215232_beta.geo-fs.com.jpeg?raw=true
+GeoFS FIP Flight Information Plugin ✈️ A practical Tampermonkey script built exclusively for the GeoFS flight simulator, designed to help you log flight details and manage your flight data with ease!
+
+![GeoFS FIP 插件界面](https://github.com/Geo-CA/Geofs-Flight-information-plugin/blob/main/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE_28-3-2026_215232_beta.geo-fs.com.jpeg?raw=true)
 A practical Tampermonkey script built exclusively for the GeoFS flight simulator, designed to help you log flight details and manage your flight data with ease!
 
 📌 Features
