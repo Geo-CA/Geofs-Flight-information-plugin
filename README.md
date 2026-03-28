@@ -3,21 +3,21 @@ A practical Tampermonkey script built exclusively for the GeoFS flight simulator
 
 ---
 
-## 🖼️ Page Display
+## Page Display
 
 ### Simplified Chinese Display
 <p align="center">
-<img src="https://github.com/Geo-CA/Geofs-Flight-information-plugin/blob/main/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE_28-3-2026_215232_beta.geo-fs.com.jpeg?raw=true" width="700">
+<img src="https://github.com/Geo-CA/Geofs-Flight-information-plugin/blob/main/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE_28-3-2026_215232_beta.geo-fs.com.jpeg?raw=true" width="500">
 </p>
 
 ### English Display
 <p align="center">
-<img src="https://github.com/Geo-CA/Geofs-Flight-information-plugin/blob/main/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE_28-3-2026_215336_beta.geo-fs.com.jpeg?raw=true" width="700">
+<img src="https://github.com/Geo-CA/Geofs-Flight-information-plugin/blob/main/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE_28-3-2026_215336_beta.geo-fs.com.jpeg?raw=true" width="500">
 </p>
 
 ### Traditional Chinese Display
 <p align="center">
-<img src="https://github.com/Geo-CA/Geofs-Flight-information-plugin/blob/main/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE_28-3-2026_215418_beta.geo-fs.com.jpeg?raw=true" width="700">
+<img src="https://github.com/Geo-CA/Geofs-Flight-information-plugin/blob/main/%E5%B1%8F%E5%B9%95%E6%88%AA%E5%9B%BE_28-3-2026_215418_beta.geo-fs.com.jpeg?raw=true" width="500">
 </p>
 
 ---
@@ -67,3 +67,8 @@ A practical Tampermonkey script built exclusively for the GeoFS flight simulator
 ## Author
 @Geo-CA
 A GeoFS flight enthusiast focused on building useful tools for flight simulators
+
+---
+
+## 📄 License
+MIT License
