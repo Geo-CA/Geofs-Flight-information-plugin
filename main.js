@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name         Geofs FIP (Geofs Flight information plugin)
-// @namespace    https://github.com/qingqingchen184-ai/Geofs-FIP
+// @namespace    https://github.com/Geo-CA/Geofs-FIP
 // @version      1.0
-// @description  GeoFS飞行模拟器航班信息面板，支持计时、多语言
+// @description  Geofs Flight information plugin
 // @author       Geo-CA
 // @match        *://*.geo-fs.com/*
 // @grant        none
-// ==/UserScript==
 // ==/UserScript==
 (function() {
     'use strict';
@@ -101,7 +100,7 @@
         let miniBtnVisible = true;
         let miniBtn, toggleMiniBtn;
 
-        // 🔒 彻底解决输入框与游戏按键冲突（D/W/S/A等全解决）
+        // 🔒 彻底解决输入框与游戏按键冲突
         function blockGameKeysOnInput(input) {
             input.addEventListener('focus', () => {
                 window.__geoInputActive = true;
@@ -109,7 +108,7 @@
             input.addEventListener('blur', () => {
                 window.__geoInputActive = false;
             });
-            // 拦截所有键盘事件，不传给游戏
+            // 拦截所有键盘事件
             function stop(e) {
                 e.stopImmediatePropagation();
                 e.stopPropagation();
@@ -440,7 +439,7 @@
             statusText.textContent = l.status0;
         });
 
-        // K键开关面板（输入框激活时不生效）
+        // K键开关面板
         document.addEventListener('keydown', (e) => {
             if (window.__geoInputActive) return;
             if (e.key.toLowerCase() === 'k') {
@@ -452,4 +451,4 @@
     }
 
     setTimeout(startPlugin, 500);
-})();
+})();      
