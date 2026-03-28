@@ -64,11 +64,6 @@ A practical Tampermonkey script built exclusively for the GeoFS flight simulator
 
 ---
 
-## 🙋‍♂️ Author
-@CCA963 (Geo-CA)
+## Author
+@Geo-CA
 A GeoFS flight enthusiast focused on building useful tools for flight simulators
-
----
-
-## 📄 License
-MIT License
