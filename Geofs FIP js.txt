@@ -1,0 +1,455 @@
+// ==UserScript==
+// @name         Geofs FIP (Geofs Flight information plugin)
+// @namespace    https://github.com/qingqingchen184-ai/Geofs-FIP
+// @version      1.0
+// @description  GeoFS飞行模拟器航班信息面板，支持计时、多语言
+// @author       Geo-CA
+// @match        *://*.geo-fs.com/*
+// @grant        none
+// ==/UserScript==
+// ==/UserScript==
+(function() {
+    'use strict';
+
+    function startPlugin() {
+        if (document.getElementById('flightInfoPanelGeoCA')) return;
+
+        const panel = document.createElement('div');
+        panel.id = 'flightInfoPanelGeoCA';
+        panel.style.position = 'fixed';
+        panel.style.top = '10px';
+        panel.style.left = '10px';
+        panel.style.width = '320px';
+        panel.style.background = 'rgba(10, 15, 30, 0.97)';
+        panel.style.color = '#fff';
+        panel.style.padding = '8px';
+        panel.style.borderRadius = '8px';
+        panel.style.fontFamily = 'Arial, sans-serif';
+        panel.style.zIndex = '99999';
+        panel.style.display = 'flex';
+        panel.style.flexDirection = 'column';
+        panel.style.gap = '6px';
+        panel.style.border = '1px solid #00ccff';
+
+        const lang = {
+            zhCN: {
+                title: 'Geofs航班信息插件',
+                author: '本插件由抖音、bilibili Geo-CA制作',
+                start: '开始',
+                stop: '结束',
+                status0: '航班未开始',
+                status1: '航班进行中',
+                status2: '航班已结束',
+                flightNo: '航班号：',
+                acType: '机型：',
+                dep: '起飞机场：',
+                arr: '降落机场：',
+                ete: '预计飞行时间：',
+                hotkey: '按K键开关面板',
+                wish: '祝您飞行愉快',
+                close: '关闭',
+                reset: '重置',
+                langBtn: '简体中文',
+                toggleMiniBtn: '隐藏按钮'
+            },
+            en: {
+                title: 'Geofs Flight Info',
+                author: 'By Douyin & Bilibili Geo-CA',
+                start: 'Start',
+                stop: 'Stop',
+                status0: 'Not Started',
+                status1: 'In Progress',
+                status2: 'Completed',
+                flightNo: 'Flight:',
+                acType: 'Aircraft:',
+                dep: 'Dep:',
+                arr: 'Arr:',
+                ete: 'Duration:',
+                hotkey: 'Press K to toggle panel',
+                wish: 'Have a nice flight',
+                close: 'Close',
+                reset: 'Reset',
+                langBtn: 'English',
+                toggleMiniBtn: 'Hide Button'
+            },
+            zhTW: {
+                title: 'Geofs航班資訊外掛',
+                author: '此外掛由抖音、bilibili Geo-CA製作',
+                start: '開始',
+                stop: '結束',
+                status0: '航班未開始',
+                status1: '航班進行中',
+                status2: '航班已結束',
+                flightNo: '航班號：',
+                acType: '機型：',
+                dep: '起飛機場：',
+                arr: '降落機場：',
+                ete: '預計飛行時間：',
+                hotkey: '按K鍵開關面板',
+                wish: '祝您飛行愉快',
+                close: '關閉',
+                reset: '重置',
+                langBtn: '繁體中文',
+                toggleMiniBtn: '隱藏按鈕'
+            }
+        };
+
+        let currentLang = 'zhCN';
+        let flightStatus = 0;
+        let timerId = null;
+        let seconds = 0;
+        let miniBtnVisible = true;
+        let miniBtn, toggleMiniBtn;
+
+        // 🔒 彻底解决输入框与游戏按键冲突（D/W/S/A等全解决）
+        function blockGameKeysOnInput(input) {
+            input.addEventListener('focus', () => {
+                window.__geoInputActive = true;
+            });
+            input.addEventListener('blur', () => {
+                window.__geoInputActive = false;
+            });
+            // 拦截所有键盘事件，不传给游戏
+            function stop(e) {
+                e.stopImmediatePropagation();
+                e.stopPropagation();
+            }
+            input.addEventListener('keydown', stop);
+            input.addEventListener('keyup', stop);
+            input.addEventListener('keypress', stop);
+        }
+
+        function updateText() {
+            const l = lang[currentLang];
+            line1.textContent = l.title;
+            line2.textContent = l.author;
+            toggleBtn.textContent = timerId ? l.stop : l.start;
+            statusText.textContent = flightStatus === 0 ? l.status0 : flightStatus === 1 ? l.status1 : l.status2;
+            flightNoSpan.textContent = l.flightNo;
+            acTypeSpan.textContent = l.acType;
+            depSpan.textContent = l.dep;
+            arrSpan.textContent = l.arr;
+            eteSpan.textContent = l.ete;
+            line6.textContent = l.hotkey;
+            wishText.textContent = l.wish;
+            closeBtn.textContent = l.close;
+            resetBtn.textContent = l.reset;
+            langBtn.textContent = l.langBtn;
+            toggleMiniBtn.textContent = miniBtnVisible ? l.toggleMiniBtn : (currentLang === 'zhCN' ? '显示按钮' : currentLang === 'en' ? 'Show Button' : '顯示按鈕');
+        }
+
+        // 标题行
+        const line1 = document.createElement('div');
+        line1.style.textAlign = 'center';
+        line1.style.fontSize = '15px';
+        line1.style.fontWeight = 'bold';
+        line1.style.color = '#00ccff';
+        panel.appendChild(line1);
+
+        const line2 = document.createElement('div');
+        line2.style.textAlign = 'center';
+        line2.style.fontSize = '11px';
+        line2.style.color = '#88ddff';
+        panel.appendChild(line2);
+
+        // 计时行
+        const line3 = document.createElement('div');
+        line3.style.display = 'flex';
+        line3.style.alignItems = 'center';
+        line3.style.gap = '8px';
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.style.padding = '3px 8px';
+        toggleBtn.style.fontSize = '12px';
+        toggleBtn.style.cursor = 'pointer';
+        toggleBtn.style.background = '#00e676';
+        toggleBtn.style.color = '#000';
+        toggleBtn.style.border = 'none';
+        toggleBtn.style.borderRadius = '6px';
+        toggleBtn.style.fontWeight = 'bold';
+
+        const timerDisplay = document.createElement('div');
+        timerDisplay.textContent = '00:00:00';
+        timerDisplay.style.minWidth = '70px';
+        timerDisplay.style.fontFamily = 'monospace';
+        timerDisplay.style.fontSize = '14px';
+        timerDisplay.style.color = '#ffd740';
+        timerDisplay.style.fontWeight = 'bold';
+
+        const statusText = document.createElement('div');
+        statusText.style.fontSize = '12px';
+        statusText.style.color = '#ffd740';
+        statusText.style.fontWeight = 'bold';
+
+        line3.appendChild(toggleBtn);
+        line3.appendChild(timerDisplay);
+        line3.appendChild(statusText);
+        panel.appendChild(line3);
+
+        // 第一行输入
+        const line4 = document.createElement('div');
+        line4.style.display = 'flex';
+        line4.style.flexWrap = 'wrap';
+        line4.style.gap = '6px';
+        line4.style.alignItems = 'center';
+        line4.style.fontSize = '12px';
+
+        const flightNoSpan = document.createElement('span');
+        flightNoSpan.style.color = '#40ffdc';
+        flightNoSpan.style.fontWeight = 'bold';
+        const flightNoInput = document.createElement('input');
+        flightNoInput.type = 'text';
+        flightNoInput.style.width = '70px';
+        flightNoInput.style.padding = '2px';
+        flightNoInput.style.border = '1px solid #00ccff';
+        flightNoInput.style.borderRadius = '4px';
+        flightNoInput.style.background = 'rgba(255,255,255,0.05)';
+        flightNoInput.style.color = '#fff';
+        flightNoInput.style.outline = 'none';
+        blockGameKeysOnInput(flightNoInput);
+        line4.appendChild(flightNoSpan);
+        line4.appendChild(flightNoInput);
+
+        const acTypeSpan = document.createElement('span');
+        acTypeSpan.style.color = '#40ffdc';
+        acTypeSpan.style.fontWeight = 'bold';
+        const acTypeInput = document.createElement('input');
+        acTypeInput.type = 'text';
+        acTypeInput.style.width = '70px';
+        acTypeInput.style.padding = '2px';
+        acTypeInput.style.border = '1px solid #00ccff';
+        acTypeInput.style.borderRadius = '4px';
+        acTypeInput.style.background = 'rgba(255,255,255,0.05)';
+        acTypeInput.style.color = '#fff';
+        acTypeInput.style.outline = 'none';
+        blockGameKeysOnInput(acTypeInput);
+        line4.appendChild(acTypeSpan);
+        line4.appendChild(acTypeInput);
+        panel.appendChild(line4);
+
+        // 第二行输入
+        const line5 = document.createElement('div');
+        line5.style.display = 'flex';
+        line5.style.flexWrap = 'wrap';
+        line5.style.gap = '6px';
+        line5.style.alignItems = 'center';
+        line5.style.fontSize = '12px';
+
+        const depSpan = document.createElement('span');
+        depSpan.style.color = '#40ffdc';
+        depSpan.style.fontWeight = 'bold';
+        const depInput = document.createElement('input');
+        depInput.type = 'text';
+        depInput.style.width = '60px';
+        depInput.style.padding = '2px';
+        depInput.style.border = '1px solid #00ccff';
+        depInput.style.borderRadius = '4px';
+        depInput.style.background = 'rgba(255,255,255,0.05)';
+        depInput.style.color = '#fff';
+        depInput.style.outline = 'none';
+        blockGameKeysOnInput(depInput);
+        line5.appendChild(depSpan);
+        line5.appendChild(depInput);
+
+        const arrSpan = document.createElement('span');
+        arrSpan.style.color = '#40ffdc';
+        arrSpan.style.fontWeight = 'bold';
+        const arrInput = document.createElement('input');
+        arrInput.type = 'text';
+        arrInput.style.width = '60px';
+        arrInput.style.padding = '2px';
+        arrInput.style.border = '1px solid #00ccff';
+        arrInput.style.borderRadius = '4px';
+        arrInput.style.background = 'rgba(255,255,255,0.05)';
+        arrInput.style.color = '#fff';
+        arrInput.style.outline = 'none';
+        blockGameKeysOnInput(arrInput);
+        line5.appendChild(arrSpan);
+        line5.appendChild(arrInput);
+
+        const eteSpan = document.createElement('span');
+        eteSpan.style.color = '#40ffdc';
+        eteSpan.style.fontWeight = 'bold';
+        const eteInput = document.createElement('input');
+        eteInput.type = 'text';
+        eteInput.style.width = '60px';
+        eteInput.style.padding = '2px';
+        eteInput.style.border = '1px solid #00ccff';
+        eteInput.style.borderRadius = '4px';
+        eteInput.style.background = 'rgba(255,255,255,0.05)';
+        eteInput.style.color = '#fff';
+        eteInput.style.outline = 'none';
+        blockGameKeysOnInput(eteInput);
+        line5.appendChild(eteSpan);
+        line5.appendChild(eteInput);
+        panel.appendChild(line5);
+
+        // 提示行
+        const line6 = document.createElement('div');
+        line6.style.textAlign = 'center';
+        line6.style.fontSize = '11px';
+        line6.style.color = '#88ddff';
+        panel.appendChild(line6);
+
+        // 底部按钮行
+        const line7 = document.createElement('div');
+        line7.style.display = 'flex';
+        line7.style.justifyContent = 'space-between';
+        line7.style.alignItems = 'center';
+        line7.style.marginTop = '4px';
+
+        const wishText = document.createElement('div');
+        wishText.style.fontSize = '12px';
+        wishText.style.fontWeight = '500';
+        wishText.style.color = '#69f0ae';
+        line7.appendChild(wishText);
+
+        const btnGroup = document.createElement('div');
+        btnGroup.style.display = 'flex';
+        btnGroup.style.gap = '6px';
+
+        const langBtn = document.createElement('button');
+        langBtn.style.padding = '3px 6px';
+        langBtn.style.fontSize = '11px';
+        langBtn.style.cursor = 'pointer';
+        langBtn.style.background = '#2979ff';
+        langBtn.style.color = '#fff';
+        langBtn.style.border = 'none';
+        langBtn.style.borderRadius = '6px';
+        langBtn.style.fontWeight = 'bold';
+        btnGroup.appendChild(langBtn);
+
+        toggleMiniBtn = document.createElement('button');
+        toggleMiniBtn.style.padding = '3px 6px';
+        toggleMiniBtn.style.fontSize = '11px';
+        toggleMiniBtn.style.cursor = 'pointer';
+        toggleMiniBtn.style.background = '#ff9800';
+        toggleMiniBtn.style.color = '#000';
+        toggleMiniBtn.style.border = 'none';
+        toggleMiniBtn.style.borderRadius = '6px';
+        toggleMiniBtn.style.fontWeight = 'bold';
+        btnGroup.appendChild(toggleMiniBtn);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.style.padding = '3px 8px';
+        closeBtn.style.fontSize = '12px';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.style.background = '#ff5252';
+        closeBtn.style.color = '#fff';
+        closeBtn.style.border = 'none';
+        closeBtn.style.borderRadius = '6px';
+        closeBtn.style.fontWeight = 'bold';
+        btnGroup.appendChild(closeBtn);
+
+        const resetBtn = document.createElement('button');
+        resetBtn.style.padding = '3px 8px';
+        resetBtn.style.fontSize = '12px';
+        resetBtn.style.cursor = 'pointer';
+        resetBtn.style.background = '#ea80fc';
+        resetBtn.style.color = '#000';
+        resetBtn.style.border = 'none';
+        resetBtn.style.borderRadius = '6px';
+        resetBtn.style.fontWeight = 'bold';
+        btnGroup.appendChild(resetBtn);
+
+        line7.appendChild(btnGroup);
+        panel.appendChild(line7);
+        document.body.appendChild(panel);
+
+        // 按钮部分
+        miniBtn = document.createElement('button');
+        miniBtn.innerText = 'Geofs FIP';
+        miniBtn.style.position = 'fixed';
+        miniBtn.style.left = '10px';      // 靠左
+        miniBtn.style.bottom = '60px';    // 底部工具栏上方
+        miniBtn.style.padding = '8px 14px';
+        miniBtn.style.fontSize = '14px';
+        miniBtn.style.borderRadius = '8px';
+        miniBtn.style.background = '#1a237e';
+        miniBtn.style.color = '#fff';
+        miniBtn.style.fontWeight = 'bold';
+        miniBtn.style.border = 'none';
+        miniBtn.style.cursor = 'pointer';
+        miniBtn.style.zIndex = '99998';
+        document.body.appendChild(miniBtn);
+
+        miniBtn.addEventListener('click', () => {
+            panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+        });
+
+        toggleMiniBtn.addEventListener('click', () => {
+            miniBtnVisible = !miniBtnVisible;
+            miniBtn.style.display = miniBtnVisible ? 'block' : 'none';
+            updateText();
+        });
+        // ==============================================================
+
+        // 多语言切换
+        langBtn.addEventListener('click', () => {
+            currentLang = currentLang === 'zhCN' ? 'en' : currentLang === 'en' ? 'zhTW' : 'zhCN';
+            updateText();
+        });
+
+        // 开始/结束计时
+        toggleBtn.addEventListener('click', () => {
+            const l = lang[currentLang];
+            if (!timerId) {
+                toggleBtn.textContent = l.stop;
+                toggleBtn.style.background = '#ff5252';
+                toggleBtn.style.color = '#fff';
+                flightStatus = 1;
+                statusText.textContent = l.status1;
+                statusText.style.color = '#69f0ae';
+                timerId = setInterval(() => {
+                    seconds++;
+                    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+                    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+                    const s = String(seconds % 60).padStart(2, '0');
+                    timerDisplay.textContent = `${h}:${m}:${s}`;
+                }, 1000);
+            } else {
+                clearInterval(timerId);
+                timerId = null;
+                toggleBtn.textContent = l.start;
+                toggleBtn.style.background = '#00e676';
+                toggleBtn.style.color = '#000';
+                flightStatus = 2;
+                statusText.textContent = l.status2;
+                statusText.style.color = '#ffab40';
+            }
+        });
+
+        // 关闭面板
+        closeBtn.addEventListener('click', () => {
+            panel.style.display = 'none';
+        });
+
+        // 重置
+        resetBtn.addEventListener('click', () => {
+            flightNoInput.value = '';
+            acTypeInput.value = '';
+            depInput.value = '';
+            arrInput.value = '';
+            eteInput.value = '';
+            clearInterval(timerId); timerId = null; seconds = 0;
+            timerDisplay.textContent = '00:00:00';
+            const l = lang[currentLang];
+            toggleBtn.textContent = l.start;
+            toggleBtn.style.background = '#00e676';
+            flightStatus = 0;
+            statusText.textContent = l.status0;
+        });
+
+        // K键开关面板（输入框激活时不生效）
+        document.addEventListener('keydown', (e) => {
+            if (window.__geoInputActive) return;
+            if (e.key.toLowerCase() === 'k') {
+                panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+            }
+        });
+
+        updateText();
+    }
+
+    setTimeout(startPlugin, 500);
+})();
