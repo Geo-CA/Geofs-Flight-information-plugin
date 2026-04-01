@@ -34,12 +34,19 @@ This v1.2 update delivers **polished UI consistency, expanded logging capabiliti
 
 ### Full Feature List
 ✅ **Flight Information Panel**: Log flight date, flight number, aircraft type, departure/arrival airports, and estimated flight time
+
 ✅ **Flight Timer**: One-click start/stop for accurate flight duration tracking
+
 ✅ **Multi-language Support**: Seamless switching between Simplified Chinese, English, and Traditional Chinese
+
 ✅ **Quick Panel Toggle**: Dual control via bottom-left "Geofs FIP" floating button and K-key hotkey
+
 ✅ **Floating Button Visibility Control**: Hide/show the bottom-left button directly from the panel for an unobstructed view
+
 ✅ **Input Conflict Prevention**: No game control triggers when typing in input fields for smooth data entry
+
 ✅ **One-click Reset**: Instantly clear all flight data to start a new log
+
 ✅ **One-click Tampermonkey Installation**: Full browser compatibility, ready to use out of the box
 
 ---
