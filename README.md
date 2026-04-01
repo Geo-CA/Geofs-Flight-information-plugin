@@ -30,6 +30,7 @@ Input Conflict Fix: Automatically blocks game hotkeys when input fields are focu
 Copy the full plugin code, create a new script in Tampermonkey, and paste the code
 Save the script and refresh the GeoFS page; the plugin will load automatically
 Open the panel via the bottom-left "Geofs FIP" button or the K-key, fill in flight details, and start the timer to begin logging
+
 This update delivers comprehensive UI, feature, and experience optimizations without altering the original core logic, making it ideal for daily flight simulation and flight log management.
 
 Developed by Geo-CA
