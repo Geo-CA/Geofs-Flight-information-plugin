@@ -3,7 +3,7 @@
 
 ---
 
-### 🌀 Update Overview
+###  Update Overview
 This v1.4 update introduces save/view mode toggle, full multi-language support, and refined UI polish, while preserving **100% of the original plugin logic, layout, and core functionality**.  
 It is built to make your GeoFS flight logging smoother, cleaner, and more customizable than ever.
 
