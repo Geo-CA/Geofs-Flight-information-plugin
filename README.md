@@ -27,7 +27,7 @@ It is built to make your GeoFS flight logging smoother, cleaner, and more custom
 
 ### 📌 Core Features
 - Real-time flight timer with Start/Stop controls
-- Full flight details input (date, airline, flight number, aircraft, dep/arr, duration)
+- Full flight details input (date, flight number, aircraft, dep/arr, duration)
 - Toggleable panel with the K key
 - Floating quick-access button
 - Reset function to clear all flight data
