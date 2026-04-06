@@ -58,5 +58,5 @@ It is built to make your GeoFS flight logging smoother, cleaner, and more custom
 
 ---
 
-Made with ❤️ by Geo-CA  
+Made with  by Geo-CA  
 For Douyin & Bilibili
