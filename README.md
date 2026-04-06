@@ -1,15 +1,15 @@
-# GeoFS FIP Flight Information Plugin v1.4
+# GeoFS FIP Flight Information Plugin v1.3
 ## Update Release Notes ✈️
 
 ---
 
 ###  Update Overview
-This v1.4 update introduces save/view mode toggle, full multi-language support, and refined UI polish, while preserving **100% of the original plugin logic, layout, and core functionality**.  
+This v1.3 update introduces save/view mode toggle, full multi-language support, and refined UI polish, while preserving **100% of the original plugin logic, layout, and core functionality**.  
 It is built to make your GeoFS flight logging smoother, cleaner, and more customizable than ever.
 
 ---
 
-### ✨ What's New in v1.4
+### ✨ What's New in v1.3
 - **Save & View Mode Toggle**
   - New "Save" button to lock and display your flight details
   - Clean view mode with the title changed to "Flight Info"
