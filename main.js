@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Geofs FIP (Geofs Flight information plugin)
 // @namespace    https://github.com/Geo-CA/Geofs-FIP
-// @version      1.2
+// @version      1.3
 // @description  Geofs Flight information plugin
 // @author       Geo-CA
 // @match        *://*.geo-fs.com/*
@@ -33,6 +33,7 @@
         const lang = {
             zhCN: {
                 title: 'Geofs航班信息插件',
+                saveTitle: '航班信息',
                 author: '本插件由抖音、bilibili Geo-CA制作',
                 start: '开始',
                 stop: '结束',
@@ -49,6 +50,8 @@
                 wish: '祝您飞行愉快',
                 close: '关闭',
                 reset: '重置',
+                save: '保存',
+                back: '返回',
                 langBtn: '简体中文',
                 toggleMiniBtn: '隐藏按钮',
                 showBtn: '显示按钮',
@@ -56,6 +59,7 @@
             },
             en: {
                 title: 'Geofs Flight Info',
+                saveTitle: 'Flight Info',
                 author: 'By Douyin & Bilibili Geo-CA',
                 start: 'Start',
                 stop: 'Stop',
@@ -72,6 +76,8 @@
                 wish: 'Have a nice flight',
                 close: 'Close',
                 reset: 'Reset',
+                save: 'Save',
+                back: 'Back',
                 langBtn: 'English',
                 toggleMiniBtn: 'Hide Button',
                 showBtn: 'Show Button',
@@ -79,6 +85,7 @@
             },
             zhTW: {
                 title: 'Geofs航班資訊外掛',
+                saveTitle: '航班資訊',
                 author: '此外掛由抖音、bilibili Geo-CA製作',
                 start: '開始',
                 stop: '結束',
@@ -95,6 +102,8 @@
                 wish: '祝您飛行愉快',
                 close: '關閉',
                 reset: '重置',
+                save: '儲存',
+                back: '返回',
                 langBtn: '繁體中文',
                 toggleMiniBtn: '隱藏按鈕',
                 showBtn: '顯示',
@@ -108,6 +117,8 @@
         let seconds = 0;
         let miniBtnVisible = true;
         let miniBtn, toggleMiniBtn;
+
+        let isViewMode = false;
 
         function blockGameKeysOnInput(input) {
             input.addEventListener('focus', () => { window.__geoInputActive = true; });
@@ -145,7 +156,7 @@
 
         function updateText() {
             const l = lang[currentLang];
-            line1.textContent = l.title;
+            line1.textContent = isViewMode ? l.saveTitle : l.title;
             line2.textContent = l.author;
             toggleBtn.textContent = timerId ? l.stop : l.start;
             statusText.textContent = flightStatus === 0 ? l.status0 : flightStatus === 1 ? l.status1 : l.status2;
@@ -159,12 +170,14 @@
             wishText.textContent = l.wish;
             closeBtn.textContent = l.close;
             resetBtn.textContent = l.reset;
+            saveBtn.textContent = l.save;
+            backBtn.textContent = l.back;
             langBtn.textContent = l.langBtn;
             toggleMiniBtn.textContent = miniBtnVisible ? l.toggleMiniBtn : l.showBtn;
             collapse.head.textContent = l.settings;
         }
 
-        // 标题
+        // Headline
         const line1 = document.createElement('div');
         line1.style.textAlign = 'center';
         line1.style.fontSize = '15px';
@@ -178,7 +191,7 @@
         line2.style.color = '#ffffff';
         panel.appendChild(line2);
 
-        // 计时行
+        // Timeline
         const line3 = document.createElement('div');
         line3.style.display = 'flex';
         line3.style.alignItems = 'center';
@@ -334,7 +347,34 @@
         blockGameKeysOnInput(eteInput);
         line5.appendChild(eteSpan);
         line5.appendChild(eteInput);
+
+        const saveBtn = document.createElement('button');
+        saveBtn.style.padding = '2px 6px';
+        saveBtn.style.fontSize = '11px';
+        saveBtn.style.background = '#005500';
+        saveBtn.style.color = '#fff';
+        saveBtn.style.border = 'none';
+        saveBtn.style.borderRadius = '4px';
+        line5.appendChild(saveBtn);
         panel.appendChild(line5);
+
+        // View area
+        const viewArea = document.createElement('div');
+        viewArea.style.display = 'none';
+        viewArea.style.flexDirection = 'column';
+        viewArea.style.gap = '4px';
+        viewArea.style.fontSize = '12px';
+        viewArea.style.color = '#fff';
+
+        const vDate = document.createElement('div');
+        const vFlight = document.createElement('div');
+        const vAc = document.createElement('div');
+        const vDep = document.createElement('div');
+        const vArr = document.createElement('div');
+        const vEte = document.createElement('div');
+
+        viewArea.append(vDate, vFlight, vAc, vDep, vArr, vEte);
+        panel.appendChild(viewArea);
 
         // Hint
         const line6 = document.createElement('div');
@@ -366,6 +406,17 @@
         resetBtn.style.borderRadius = '6px';
         resetBtn.style.fontWeight = 'bold';
 
+        const backBtn = document.createElement('button');
+        backBtn.style.padding = '3px 8px';
+        backBtn.style.fontSize = '12px';
+        backBtn.style.cursor = 'pointer';
+        backBtn.style.background = '#000000';
+        backBtn.style.color = '#ffffff';
+        backBtn.style.border = 'none';
+        backBtn.style.borderRadius = '6px';
+        backBtn.style.fontWeight = 'bold';
+        backBtn.style.display = 'none';
+
         const closeBtn = document.createElement('button');
         closeBtn.style.padding = '3px 8px';
         closeBtn.style.fontSize = '12px';
@@ -377,6 +428,7 @@
         closeBtn.style.fontWeight = 'bold';
 
         line7.appendChild(resetBtn);
+        line7.appendChild(backBtn);
         line7.appendChild(closeBtn);
         panel.appendChild(line7);
 
@@ -479,6 +531,40 @@
         toggleMiniBtn.addEventListener('click', () => {
             miniBtnVisible = !miniBtnVisible;
             miniBtn.style.display = miniBtnVisible ? 'block' : 'none';
+            updateText();
+        });
+
+        saveBtn.addEventListener('click', () => {
+            isViewMode = true;
+            line2.style.display = 'none';
+            lineDate.style.display = 'none';
+            line4.style.display = 'none';
+            line5.style.display = 'none';
+            line6.style.display = 'none';
+            viewArea.style.display = 'flex';
+            backBtn.style.display = 'inline-block';
+            resetBtn.style.display = 'none';
+
+            const l = lang[currentLang];
+            vDate.textContent = l.date + ' ' + dateInput.value;
+            vFlight.textContent = l.flightNo + ' ' + flightNoInput.value;
+            vAc.textContent = l.acType + ' ' + acTypeInput.value;
+            vDep.textContent = l.dep + ' ' + depInput.value;
+            vArr.textContent = l.arr + ' ' + arrInput.value;
+            vEte.textContent = l.ete + ' ' + eteInput.value;
+            updateText();
+        });
+
+        backBtn.addEventListener('click', () => {
+            isViewMode = false;
+            line2.style.display = 'block';
+            lineDate.style.display = 'flex';
+            line4.style.display = 'flex';
+            line5.style.display = 'flex';
+            line6.style.display = 'block';
+            viewArea.style.display = 'none';
+            backBtn.style.display = 'none';
+            resetBtn.style.display = 'inline-block';
             updateText();
         });
 
