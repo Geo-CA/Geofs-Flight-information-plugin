@@ -1,13 +1,11 @@
 GeoFS FIP Flight Information Plugin v1.4
  
 Update Release Notes ✈️
- 
  
  
 Update Overview
  
 This v1.4 update delivers pixel-perfect UI refinement and consistent branding for the GeoFS FIP plugin, fully aligning the bottom bar toggle button with native GeoFS styling while preserving 100% of core functionality. It creates a seamless, integrated cockpit experience for virtual pilots.
- 
  
  
 ✨ What's New in v1.4
