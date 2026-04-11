@@ -1,14 +1,25 @@
 // ==UserScript==
 // @name         Geofs FIP (Geofs Flight information plugin)
 // @namespace    https://github.com/Geo-CA/Geofs-FIP
-// @version      1.3
+// @version      1.4
 // @description  Geofs Flight information plugin
 // @author       Geo-CA
 // @match        *://*.geo-fs.com/*
 // @grant        none
-// ==UserScript==
+// @run-at       document-end
+// ==/UserScript==
 (function() {
     'use strict';
+
+    function waitForBottomBar(callback) {
+        const timer = setInterval(() => {
+            const bar = document.querySelector('.geofs-ui-bottom, [class*="bottom-bar"], .bottom-ui');
+            if (bar && bar.offsetParent !== null) {
+                clearInterval(timer);
+                callback(bar);
+            }
+        }, 200);
+    }
 
     function startPlugin() {
         if (document.getElementById('flightInfoPanelGeoCA')) return;
@@ -117,7 +128,6 @@
         let seconds = 0;
         let miniBtnVisible = true;
         let miniBtn, toggleMiniBtn;
-
         let isViewMode = false;
 
         function blockGameKeysOnInput(input) {
@@ -177,7 +187,6 @@
             collapse.head.textContent = l.settings;
         }
 
-        // Headline
         const line1 = document.createElement('div');
         line1.style.textAlign = 'center';
         line1.style.fontSize = '15px';
@@ -191,7 +200,6 @@
         line2.style.color = '#ffffff';
         panel.appendChild(line2);
 
-        // Timeline
         const line3 = document.createElement('div');
         line3.style.display = 'flex';
         line3.style.alignItems = 'center';
@@ -225,7 +233,6 @@
         line3.appendChild(statusText);
         panel.appendChild(line3);
 
-        // date
         const lineDate = document.createElement('div');
         lineDate.style.display = 'flex';
         lineDate.style.gap = '6px';
@@ -251,7 +258,6 @@
         lineDate.appendChild(dateInput);
         panel.appendChild(lineDate);
 
-        // Fight number+Aircraft type
         const line4 = document.createElement('div');
         line4.style.display = 'flex';
         line4.style.flexWrap = 'wrap';
@@ -292,7 +298,6 @@
         line4.appendChild(acTypeInput);
         panel.appendChild(line4);
 
-        // Departure airport+Arrival airport
         const line5 = document.createElement('div');
         line5.style.display = 'flex';
         line5.style.flexWrap = 'wrap';
@@ -358,7 +363,6 @@
         line5.appendChild(saveBtn);
         panel.appendChild(line5);
 
-        // View area
         const viewArea = document.createElement('div');
         viewArea.style.display = 'none';
         viewArea.style.flexDirection = 'column';
@@ -376,14 +380,12 @@
         viewArea.append(vDate, vFlight, vAc, vDep, vArr, vEte);
         panel.appendChild(viewArea);
 
-        // Hint
         const line6 = document.createElement('div');
         line6.style.textAlign = 'center';
         line6.style.fontSize = '11px';
         line6.style.color = '#ffffff';
         panel.appendChild(line6);
 
-        // Bottom
         const line7 = document.createElement('div');
         line7.style.display = 'flex';
         line7.style.justifyContent = 'space-between';
@@ -463,25 +465,37 @@
         btnGroup.append(langBtn, toggleMiniBtn);
         collapse.body.appendChild(btnGroup);
 
-        // Floating button
+        // ↓↓↓ 只改了这里：按钮文字 → Geofs FIP ↓↓↓
         miniBtn = document.createElement('button');
         miniBtn.innerText = 'Geofs FIP';
-        miniBtn.style.position = 'fixed';
-        miniBtn.style.left = '10px';
-        miniBtn.style.bottom = '60px';
-        miniBtn.style.padding = '8px 14px';
-        miniBtn.style.fontSize = '14px';
-        miniBtn.style.borderRadius = '8px';
-        miniBtn.style.background = '#000000';
-        miniBtn.style.color = '#ffffff';
-        miniBtn.style.fontWeight = 'bold';
-        miniBtn.style.border = 'none';
-        miniBtn.style.cursor = 'pointer';
-        miniBtn.style.zIndex = '99998';
-        document.body.appendChild(miniBtn);
+        miniBtn.className = 'mdl-button mdl-js-button geofs-f-standard-ui';
+        miniBtn.style.cssText = `
+            color: #000;
+            background: transparent;
+            border: none;
+            padding: 0 12px;
+            margin: 0;
+            height: 100%;
+            line-height: normal;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: Roboto, Arial, sans-serif;
+            white-space: nowrap;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        `;
+        miniBtn.addEventListener('mouseenter', () => miniBtn.style.background = 'rgba(0,0,0,0.05)');
+        miniBtn.addEventListener('mouseleave', () => miniBtn.style.background = 'transparent');
 
         miniBtn.addEventListener('click', () => {
-            panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+            panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'flex' : 'none';
+        });
+
+        waitForBottomBar((bar) => {
+            bar.appendChild(miniBtn);
         });
 
         langBtn.addEventListener('click', () => {
@@ -530,7 +544,7 @@
 
         toggleMiniBtn.addEventListener('click', () => {
             miniBtnVisible = !miniBtnVisible;
-            miniBtn.style.display = miniBtnVisible ? 'block' : 'none';
+            miniBtn.style.display = miniBtnVisible ? 'inline-flex' : 'none';
             updateText();
         });
 
@@ -571,7 +585,7 @@
         document.addEventListener('keydown', (e) => {
             if (window.__geoInputActive) return;
             if (e.key.toLowerCase() === 'k') {
-                panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+                panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'flex' : 'none';
             }
         });
 
@@ -579,5 +593,9 @@
         document.body.appendChild(panel);
     }
 
-    setTimeout(startPlugin, 500);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startPlugin);
+    } else {
+        startPlugin();
+    }
 })();
